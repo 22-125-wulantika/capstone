@@ -67,9 +67,10 @@ if any([filter_price, filter_rating, filter_ram, filter_battery]):
         top_indices = [s[0] for s in similarity_scores[:5]]
         rekomendasi = data.iloc[top_indices]
 
-        # Tambahkan kolom ranking untuk menampilkan urutan 1, 2, 3, 4, 5
+        # Tambahkan kolom ranking untuk menampilkan urutan 1, 2, 3, 4, 5 tanpa nomor asli
         rekomendasi['Ranking'] = range(1, len(rekomendasi) + 1)
 
+        # Hanya tampilkan kolom yang relevan, tanpa nomor asli
         st.dataframe(rekomendasi[['Ranking', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
