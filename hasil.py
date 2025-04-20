@@ -1,74 +1,87 @@
 import streamlit as st
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.preprocessing import MinMaxScaler
 
 # Load dataset
-data = pd.read_excel('data_smartphones.xlsx')
+data = pd.read_excel('data_smartphones.xlsx')  # Pastikan nama file sesuai
 
-# Fitur yang digunakan
-fitur = ['Price', 'Ratings', 'RAM (GB)', 'Battery']
+# Label Encoding untuk kolom kategorikal
+label_encoder_brand = LabelEncoder()
+label_encoder_type = LabelEncoder()
 
-# Normalisasi fitur
-scaler = MinMaxScaler()
-data_scaled = scaler.fit_transform(data[fitur])
+data['Brand'] = label_encoder_brand.fit_transform(data['Brand'].astype(str))
+data['Type'] = label_encoder_type.fit_transform(data['Type'].astype(str))
 
-# Cosine similarity
-similarity_matrix = cosine_similarity(data_scaled)
+# Pastikan kolom numeric di-cast dengan benar
+numeric_columns = ['Price', 'Ratings', 'RAM (GB)', 'Battery']
+for col in numeric_columns:
+    data[col] = pd.to_numeric(data[col], errors='coerce')
 
-# Tampilkan judul dan data
-st.subheader("📱 Sistem Rekomendasi Smartphone Berdasarkan Preferensi")
-st.write("Berikut ini adalah data smartphone yang tersedia:")
-st.dataframe(data)
+# Drop baris dengan nilai kosong
+data.dropna(inplace=True)
 
-# Filter
-st.subheader("🔍 Pilih Kriteria Smartphone yang Anda Inginkan")
+# Data untuk similarity
+features = data[['Price', 'Ratings', 'RAM (GB)', 'Battery']]
+similarity_matrix = cosine_similarity(features)
 
-filter_price = st.checkbox("Filter Harga")
-filter_rating = st.checkbox("Filter Rating")
-filter_ram = st.checkbox("Filter RAM")
-filter_battery = st.checkbox("Filter Baterai")
+# Tampilkan judul dan dataset awal
+st.title("📱 Sistem Rekomendasi Smartphone")
+st.write("Berikut adalah data smartphone yang tersedia:")
+st.dataframe(data[['Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']].head(10))
 
-# Input user
-if any([filter_price, filter_rating, filter_ram, filter_battery]):
-    data_filtered = data.copy()
-    
-    if filter_price:
-        max_price = st.number_input("Masukkan Harga Maksimal (Rp)", min_value=0, value=6000000, step=500000)
-        data_filtered = data_filtered[data_filtered['Price'] <= max_price]
+# Filter pilihan
+st.subheader("🎯 Pilih Kriteria Smartphone yang Diinginkan")
 
-    if filter_rating:
-        min_rating = st.slider("Pilih Rating Minimal", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
-        data_filtered = data_filtered[data_filtered['Ratings'] >= min_rating]
+filter_brand = st.checkbox("Filter berdasarkan Brand")
+filter_price = st.checkbox("Filter berdasarkan Harga Maksimal")
+filter_rating = st.checkbox("Filter berdasarkan Rating Minimal")
+filter_ram = st.checkbox("Filter berdasarkan RAM Minimal")
+filter_battery = st.checkbox("Filter berdasarkan Kapasitas Baterai Minimal")
 
-    if filter_ram:
-        min_ram = st.selectbox("Pilih RAM Minimal (GB)", sorted(data['RAM (GB)'].unique()))
-        data_filtered = data_filtered[data_filtered['RAM (GB)'] >= min_ram]
+data_filtered = data.copy()
 
-    if filter_battery:
-        min_battery = st.selectbox("Pilih Kapasitas Baterai Minimal (mAh)", sorted(data['Battery'].unique()))
-        data_filtered = data_filtered[data_filtered['Battery'] >= min_battery]
+if filter_brand:
+    selected_brand = st.selectbox("Pilih Brand", options=data['Brand'].unique())
+    data_filtered = data_filtered[data_filtered['Brand'] == selected_brand]
 
-    # Menampilkan hasil rekomendasi
-    st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
+if filter_price:
+    max_price = st.number_input("Masukkan Harga Maksimal", min_value=0, value=3000000, step=50000)
+    data_filtered = data_filtered[data_filtered['Price'] <= max_price]
 
-    if not data_filtered.empty:
-        # Ambil index smartphone pertama yang lolos filter untuk jadi acuan
-        idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
+if filter_rating:
+    min_rating = st.slider("Pilih Rating Minimal", min_value=0.0, max_value=5.0, value=3.0, step=0.1)
+    data_filtered = data_filtered[data_filtered['Ratings'] >= min_rating]
 
-        # Ambil skor similarity dari smartphone itu ke semua
-        similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
+if filter_ram:
+    min_ram = st.slider("Pilih RAM Minimal (GB)", min_value=1, max_value=32, value=4, step=1)
+    data_filtered = data_filtered[data_filtered['RAM (GB)'] >= min_ram]
 
-        # Urutkan berdasarkan similarity tertinggi (selain diri sendiri)
-        similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
-        similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
+if filter_battery:
+    min_battery = st.slider("Pilih Baterai Minimal (mAh)", min_value=1000, max_value=10000, value=4000, step=100)
+    data_filtered = data_filtered[data_filtered['Battery'] >= min_battery]
 
-        # Ambil 5 teratas
-        top_indices = [s[0] for s in similarity_scores[:5]]
-        rekomendasi = data.iloc[top_indices]
+# Tampilkan hasil filter dan rekomendasi
+st.subheader("🔍 Rekomendasi Smartphone")
 
-        st.dataframe(rekomendasi[['Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
-    else:
-        st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
+if not data_filtered.empty:
+    # Ambil smartphone referensi (yang pertama lolos filter)
+    idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
+
+    # Hitung similarity
+    similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
+    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+    similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
+
+    # Ambil 5 teratas
+    top_indices = [s[0] for s in similarity_scores[:5]]
+    rekomendasi = data.iloc[top_indices]
+
+    # Penomoran 1-5
+    rekomendasi = rekomendasi.reset_index(drop=True)
+    rekomendasi.index = rekomendasi.index + 1
+    rekomendasi.index.name = "No"
+
+    st.dataframe(rekomendasi[['Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
 else:
-    st.info("☝️ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
+    st.warning("Data tidak ditemukan berdasarkan filter yang dipilih.")
