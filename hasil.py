@@ -17,7 +17,7 @@ data_scaled = scaler.fit_transform(data[fitur])
 similarity_matrix = cosine_similarity(data_scaled)
 
 # Tampilkan judul dan data
-st.subheader("📱 Sistem Rekomendasi Smartphone")
+st.subheader("📱 Sistem Rekomendasi Smartphone Berdasarkan Preferensi")
 st.write("Berikut ini adalah data smartphone yang tersedia:")
 st.dataframe(data)
 
@@ -67,7 +67,10 @@ if any([filter_price, filter_rating, filter_ram, filter_battery]):
         top_indices = [s[0] for s in similarity_scores[:5]]
         rekomendasi = data.iloc[top_indices]
 
-        st.dataframe(rekomendasi[['Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
+        # Tambahkan kolom ranking untuk menampilkan urutan 1, 2, 3, 4, 5
+        rekomendasi['Ranking'] = range(1, len(rekomendasi) + 1)
+
+        st.dataframe(rekomendasi[['Ranking', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
