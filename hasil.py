@@ -17,7 +17,7 @@ data_scaled = scaler.fit_transform(data[fitur])
 similarity_matrix = cosine_similarity(data_scaled)
 
 # Tampilkan judul dan data
-st.subheader("📱 Sistem Rekomendasi Smartphone Berdasarkan Preferensi")
+st.subheader("📱 Sistem Rekomendasi Smartphone")
 st.write("Berikut ini adalah data smartphone yang tersedia:")
 st.dataframe(data)
 
