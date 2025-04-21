@@ -77,23 +77,24 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
             hide_index=True
         )
 
+        # EVALUASI - hanya dilakukan jika rekomendasi tersedia dan data_filtered tidak kosong
+        if 'rekomendasi' in locals() and not data_filtered.empty and not rekomendasi.empty:
+            y_true = [1 if idx in data_filtered.index else 0 for idx in data.index]
+            y_pred = [1 if idx in rekomendasi.index else 0 for idx in data.index]
+
+            # Hitung evaluasi
+            precision = precision_score(y_true, y_pred, zero_division=0)
+            recall = recall_score(y_true, y_pred, zero_division=0)
+            f1 = f1_score(y_true, y_pred, zero_division=0)
+
+            # Tampilkan di Streamlit
+            st.subheader("📈 Evaluasi Sistem Rekomendasi")
+            st.write(f"**Precision:** {precision:.2f}")
+            st.write(f"**Recall:** {recall:.2f}")
+            st.write(f"**F1-Score:** {f1:.2f}")
+            
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
     st.info("☝ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
 
-# EVALUASI
-# Ground Truth: Mark item relevan (1) jika sesuai dengan input pengguna
-y_true = [1 if idx in data_filtered.index else 0 for idx in data.index]
-y_pred = [1 if idx in rekomendasi.index else 0 for idx in data.index]
-
-# Hitung evaluasi
-precision = precision_score(y_true, y_pred, zero_division=0)
-recall = recall_score(y_true, y_pred, zero_division=0)
-f1 = f1_score(y_true, y_pred, zero_division=0)
-
-# Tampilkan di Streamlit
-st.subheader("📈 Evaluasi Sistem Rekomendasi")
-st.write(f"**Precision:** {precision:.2f}")
-st.write(f"**Recall:** {recall:.2f}")
-st.write(f"**F1-Score:** {f1:.2f}")
