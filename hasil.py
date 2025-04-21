@@ -79,3 +79,27 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
     st.info("☝ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
+
+# EVALUASI
+# Ground Truth: Mark item relevan (1) jika sesuai dengan input pengguna
+y_true = [
+    1 if (row['Type'].lower().startswith(input_name) and 
+          row['RAM (GB)'] == input_rom and 
+          row['ROM (GB)'] == input_ram)
+    else 0
+    for _, row in data.iterrows()
+]
+
+# Prediksi: Mark item relevan (1) jika masuk dalam hasil filter
+y_pred = [1 if idx in data_filtered.index else 0 for idx in data.index]
+
+# Hitung Precision, Recall, dan F1-Score
+precision = precision_score(y_true, y_pred, zero_division=0)
+recall = recall_score(y_true, y_pred, zero_division=0)
+f1 = f1_score(y_true, y_pred, zero_division=0)
+
+# Cetak hasil evaluasi
+print("\nEvaluasi Sistem Rekomendasi:")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+print(f"F1-Score: {f1:.2f}")
