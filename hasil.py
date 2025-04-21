@@ -29,9 +29,10 @@ filter_rom = st.checkbox("Filter ROM")
 filter_camera = st.checkbox("Filter Kamera")
 filter_battery = st.checkbox("Filter Baterai")
 
+# Input user
 if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filter_battery]):
     data_filtered = data.copy()
-
+    
     if filter_price:
         max_price = st.number_input("Masukkan Harga Maksimal (Rp)", min_value=0, value=6000000, step=500000)
         data_filtered = data_filtered[data_filtered['Price'] <= max_price]
@@ -57,25 +58,24 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
         min_battery = st.selectbox("Pilih Kapasitas Baterai Minimal (mAh)", sorted(data['Battery'].unique()))
         data_filtered = data_filtered[data_filtered['Battery'] >= min_battery]
 
-    # Tombol untuk memicu rekomendasi
-    if st.button("🔎 Tampilkan Rekomendasi"):
-        st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
+    # Menampilkan hasil rekomendasi
+    st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
 
-        if not data_filtered.empty:
-            idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
-            similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
-            similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
-            similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
-            top_indices = [s[0] for s in similarity_scores[:5]]
-            rekomendasi = data.iloc[top_indices]
-            rekomendasi['No'] = range(1, len(rekomendasi) + 1)
+    if not data_filtered.empty:
+        idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
+        similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
+        similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+        similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
+        top_indices = [s[0] for s in similarity_scores[:5]]
+        rekomendasi = data.iloc[top_indices]
+        rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
-            st.dataframe(
-                rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
-                use_container_width=True,
-                hide_index=True
-            )
-        else:
-            st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
+        st.dataframe(
+            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
     st.info("☝ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
