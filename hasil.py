@@ -72,7 +72,7 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
         rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
         st.dataframe(
-            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
+            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery', 'Similarity']],
             use_container_width=True,
             hide_index=True
         )
