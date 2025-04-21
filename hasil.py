@@ -70,7 +70,7 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
         rekomendasi = data.iloc[top_indices]
         rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
-        st.dataframe(rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']])
+        st.table(rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']])
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
