@@ -61,7 +61,7 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
     # Menampilkan hasil rekomendasi
     st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
 
-    if not data_filtered.empty:
+     if not data_filtered.empty:
         idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
         similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
         similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
@@ -76,28 +76,6 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
             hide_index=True
         )
     else:
-        st.warning("⚠ Tidak ada smartphone yang sepenuhnya cocok dengan semua kriteria Anda.")
-        st.info("Berikut adalah rekomendasi terdekat berdasarkan fitur utama:")
-
-        # Buat vektor preferensi user untuk fitur numerik
-        preferensi_user = {
-            'Price': max_price if filter_price else data['Price'].mean(),
-            'Ratings': min_rating if filter_rating else data['Ratings'].mean(),
-            'RAM (GB)': min_ram if filter_ram else data['RAM (GB)'].mean(),
-            'Battery': min_battery if filter_battery else data['Battery'].mean(),
-            'ROM (GB)': min_rom if filter_rom else data['ROM (GB)'].mean(),
-        }
-
-        df_pref = pd.DataFrame([preferensi_user])
-        df_pref_scaled = scaler.transform(df_pref)
-        similarity_scores = list(enumerate(cosine_similarity(df_pref_scaled, data_scaled)[0]))
-        similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
-        top_indices = [s[0] for s in similarity_scores[:5]]
-        rekomendasi = data.iloc[top_indices]
-        rekomendasi['No'] = range(1, len(rekomendasi) + 1)
-
-        st.dataframe(
-            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
-            use_container_width=True,
-            hide_index=True
-        )
+        st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
+else:
+    st.info("☝ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
