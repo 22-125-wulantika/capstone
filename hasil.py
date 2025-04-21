@@ -63,12 +63,20 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
     st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
 
     if not data_filtered.empty:
+        # Ambil indeks dari smartphone referensi pertama
         idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
+        
+        # Hitung similarity antara referensi dengan seluruh data
         similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
         similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+
+        # Buang diri sendiri dari rekomendasi
         similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
         top_indices = [s[0] for s in similarity_scores[:5]]
-        rekomendasi = data.iloc[top_indices]
+        top_similarities = [s[1] for s in similarity_scores[:5]]
+
+        rekomendasi = data.iloc[top_indices].copy()
+        rekomendasi['Similarity'] = top_similarities
         rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
         st.dataframe(
