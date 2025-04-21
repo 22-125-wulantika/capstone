@@ -61,7 +61,7 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
     # Menampilkan hasil rekomendasi
     st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
 
-     if not data_filtered.empty:
+    if not data_filtered.empty:
         idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
         similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
         similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
@@ -71,10 +71,10 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
         rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
         st.dataframe(
-    rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
-    use_container_width=True,
-    hide_index=True
-)
+            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
+            use_container_width=True,
+            hide_index=True
+        )
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
