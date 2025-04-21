@@ -71,35 +71,32 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
         rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
         st.dataframe(
-    rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
-    use_container_width=True,
-    hide_index=True
-)
+            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
+            use_container_width=True,
+            hide_index=True
+        )
+
+    # Evaluasi sistem jika input_name, RAM, dan ROM tersedia
+        if input_name and input_ram is not None and input_rom is not None:
+            y_true = [
+                1 if (row['Type'].lower().startswith(input_name)
+                      and row['RAM (GB)'] == input_ram
+                      and row['ROM (GB)'] == input_rom)
+                else 0
+                for _, row in data.iterrows()
+            ]
+
+            y_pred = [1 if idx in data_filtered.index else 0 for idx in data.index]
+
+            precision = precision_score(y_true, y_pred, zero_division=0)
+            recall = recall_score(y_true, y_pred, zero_division=0)
+            f1 = f1_score(y_true, y_pred, zero_division=0)
+
+            st.subheader("📈 Evaluasi Sistem Rekomendasi")
+            st.write(f"**Precision:** {precision:.2f}")
+            st.write(f"**Recall:** {recall:.2f}")
+            st.write(f"**F1-Score:** {f1:.2f}")
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
     st.info("☝ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
-
-# EVALUASI
-# Ground Truth: Mark item relevan (1) jika sesuai dengan input pengguna
-y_true = [
-    1 if (row['Type'].lower().startswith(input_name) and 
-          row['RAM (GB)'] == input_rom and 
-          row['ROM (GB)'] == input_ram)
-    else 0
-    for _, row in data.iterrows()
-]
-
-# Prediksi: Mark item relevan (1) jika masuk dalam hasil filter
-y_pred = [1 if idx in data_filtered.index else 0 for idx in data.index]
-
-# Hitung Precision, Recall, dan F1-Score
-precision = precision_score(y_true, y_pred, zero_division=0)
-recall = recall_score(y_true, y_pred, zero_division=0)
-f1 = f1_score(y_true, y_pred, zero_division=0)
-
-# Cetak hasil evaluasi
-print("\nEvaluasi Sistem Rekomendasi:")
-print(f"Precision: {precision:.2f}")
-print(f"Recall: {recall:.2f}")
-print(f"F1-Score: {f1:.2f}")
