@@ -76,31 +76,6 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
             use_container_width=True,
             hide_index=True
         )
-    # Menghitung y_true: Apakah smartphone memenuhi kriteria filter
-        y_true = [
-            1 if (row['Price'] <= max_price if filter_price else True) and
-                 (row['Ratings'] >= min_rating if filter_rating else True) and
-                 (row['RAM (GB)'] >= min_ram if filter_ram else True) and
-                 (row['ROM (GB)'] >= min_rom if filter_rom else True) and
-                 (row['Camera'] == selected_camera if filter_camera else True) and
-                 (row['Battery'] >= min_battery if filter_battery else True)
-            else 0
-            for _, row in data.iterrows()
-        ]
-        
-        # Menghitung y_pred: Apakah smartphone ada dalam hasil rekomendasi
-        y_pred = [1 if idx in data_filtered.index else 0 for idx in data.index]
-        
-        # Menghitung metrik evaluasi
-        precision = precision_score(y_true, y_pred, zero_division=0)
-        recall = recall_score(y_true, y_pred, zero_division=0)
-        f1 = f1_score(y_true, y_pred, zero_division=0)
-        
-        # Menampilkan hasil evaluasi
-        st.subheader("📊 Evaluasi Rekomendasi")
-        st.write(f"**Precision**: {precision:.2f}")
-        st.write(f"**Recall**: {recall:.2f}")
-        st.write(f"**F1-Score**: {f1:.2f}")
 
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
