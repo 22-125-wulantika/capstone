@@ -68,7 +68,7 @@ if any([filter_price, filter_rating, filter_ram, filter_battery]):
         rekomendasi = data.iloc[top_indices]
 
         # Tambahkan kolom ranking untuk menampilkan urutan 1, 2, 3, 4, 5 tanpa nomor asli
-        rekomendasi['Ranking'] = range(1, len(rekomendasi) + 1)
+        rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
         # Hanya tampilkan kolom yang relevan, tanpa nomor asli
         st.dataframe(rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
