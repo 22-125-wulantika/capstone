@@ -71,7 +71,7 @@ if any([filter_price, filter_rating, filter_ram, filter_battery]):
         rekomendasi['Ranking'] = range(1, len(rekomendasi) + 1)
 
         # Hanya tampilkan kolom yang relevan, tanpa nomor asli
-        st.dataframe(rekomendasi[['Ranking', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
+        st.dataframe(rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'Battery']])
     else:
         st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
