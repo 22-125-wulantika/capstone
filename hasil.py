@@ -70,7 +70,7 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
         value=5, 
         step=1
     )
-    
+
     if not data_filtered.empty:
         # Ambil indeks dari smartphone referensi pertama
         idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
@@ -81,8 +81,8 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
 
         # Buang diri sendiri dari rekomendasi
         similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
-        top_indices = [s[0] for s in similarity_scores[:5]]
-        top_similarities = [s[1] for s in similarity_scores[:5]]
+        top_indices = [s[0] for s in similarity_scores[:jumlah_rekomendasi]]
+        top_similarities = [s[1] for s in similarity_scores[:jumlah_rekomendasi]]
 
         rekomendasi = data.iloc[top_indices].copy()
         rekomendasi['Similarity'] = top_similarities
