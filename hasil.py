@@ -1,14 +1,25 @@
 import streamlit as st
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 
 # Load dataset
 data = pd.read_excel('data_smartphones.xlsx')
 
-st.title("📱 Sistem Rekomendasi Smartphone (Content-Based Filtering)")
+# Fitur yang digunakan untuk similarity
+fitur = ['Price', 'Ratings', 'RAM (GB)', 'Battery', 'ROM (GB)']
 
-# Pilihan fitur filter
+# Normalisasi fitur
+scaler = MinMaxScaler()
+data_scaled = scaler.fit_transform(data[fitur])
+similarity_matrix = cosine_similarity(data_scaled)
+
+# Tampilkan judul dan data
+st.subheader("📱 Sistem Rekomendasi Smartphone Berdasarkan Preferensi")
+st.write("Berikut ini adalah data smartphone yang tersedia:")
+st.dataframe(data)
+
+# Filter
 st.subheader("🔍 Pilih Kriteria Smartphone yang Anda Inginkan")
 
 filter_price = st.checkbox("Filter Harga")
@@ -18,78 +29,53 @@ filter_rom = st.checkbox("Filter ROM")
 filter_camera = st.checkbox("Filter Kamera")
 filter_battery = st.checkbox("Filter Baterai")
 
-# Input pengguna
+# Input user
 if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filter_battery]):
+    data_filtered = data.copy()
+    
+    if filter_price:
+        max_price = st.number_input("Masukkan Harga Maksimal (Rp)", min_value=0, value=6000000, step=500000)
+        data_filtered = data_filtered[data_filtered['Price'] <= max_price]
 
-    input_name = st.text_input("Masukkan nama HP yang Anda cari (contoh: realme)").lower()
+    if filter_rating:
+        min_rating = st.slider("Pilih Rating Minimal", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
+        data_filtered = data_filtered[data_filtered['Ratings'] >= min_rating]
 
-    input_ram = st.selectbox("Pilih RAM (GB)", sorted(data['RAM (GB)'].unique())) if filter_ram else None
-    input_rom = st.selectbox("Pilih ROM (GB)", sorted(data['ROM (GB)'].unique())) if filter_rom else None
+    if filter_ram:
+        min_ram = st.selectbox("Pilih RAM Minimal (GB)", sorted(data['RAM (GB)'].unique()))
+        data_filtered = data_filtered[data_filtered['RAM (GB)'] >= min_ram]
 
-    max_price = st.number_input("Masukkan Harga Maksimal (Rp)", value=5000000, step=500000) if filter_price else None
-    min_rating = st.slider("Pilih Rating Minimal", 0.0, 5.0, 4.0, step=0.1) if filter_rating else None
+    if filter_rom:
+        min_rom = st.selectbox("Pilih ROM Minimal (GB)", sorted(data['ROM (GB)'].unique()))
+        data_filtered = data_filtered[data_filtered['ROM (GB)'] >= min_rom]
 
-    unique_cameras = sorted(data['Camera'].unique())
-    selected_camera = st.selectbox("Pilih Kamera", unique_cameras) if filter_camera else None
+    if filter_camera:
+        unique_cameras = sorted(data['Camera'].unique())
+        selected_camera = st.selectbox("Pilih Kamera", unique_cameras)
+        data_filtered = data_filtered[data_filtered['Camera'] == selected_camera]
 
-    min_battery = st.selectbox("Pilih Baterai Minimal (mAh)", sorted(data['Battery'].unique())) if filter_battery else None
+    if filter_battery:
+        min_battery = st.selectbox("Pilih Kapasitas Baterai Minimal (mAh)", sorted(data['Battery'].unique()))
+        data_filtered = data_filtered[data_filtered['Battery'] >= min_battery]
 
-    # Tombol rekomendasi
-    if st.button("🔎 Tampilkan Rekomendasi") and input_name:
-        tfidf = TfidfVectorizer()
-        name_vectors = tfidf.fit_transform(data['Type'].str.lower())
+    # Menampilkan hasil rekomendasi
+    st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
 
-        # Gabungkan fitur TF-IDF dengan RAM, ROM, Ratings
-        numerical_features = data[['RAM (GB)', 'ROM (GB)', 'Ratings']].values
-        combined_features = pd.concat([
-            pd.DataFrame(name_vectors.toarray()),
-            pd.DataFrame(numerical_features)
-        ], axis=1).values
+    if not data_filtered.empty:
+        idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
+        similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
+        similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+        similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
+        top_indices = [s[0] for s in similarity_scores[:5]]
+        rekomendasi = data.iloc[top_indices]
+        rekomendasi['No'] = range(1, len(rekomendasi) + 1)
 
-        # Query pengguna
-        query_vector = tfidf.transform([input_name]).toarray()
-        query_numerical = [[input_ram if input_ram is not None else 0,
-                            input_rom if input_rom is not None else 0,
-                            min_rating if min_rating is not None else 0]]
-        query_combined = pd.concat([
-            pd.DataFrame(query_vector),
-            pd.DataFrame(query_numerical)
-        ], axis=1).values
-
-        # Cosine Similarity
-        similarities = cosine_similarity(query_combined, combined_features)
-        data['Similarity'] = similarities.flatten()
-
-        # Filter data berdasarkan input pengguna
-        data_filtered = data.copy()
-        if input_name:
-            data_filtered = data_filtered[data_filtered['Type'].str.lower().str.contains(input_name)]
-        if input_ram is not None:
-            data_filtered = data_filtered[data_filtered['RAM (GB)'] == input_ram]
-        if input_rom is not None:
-            data_filtered = data_filtered[data_filtered['ROM (GB)'] == input_rom]
-        if min_rating is not None:
-            data_filtered = data_filtered[data_filtered['Ratings'] >= min_rating]
-        if max_price is not None:
-            data_filtered = data_filtered[data_filtered['Price'] <= max_price]
-        if selected_camera is not None:
-            data_filtered = data_filtered[data_filtered['Camera'] == selected_camera]
-        if min_battery is not None:
-            data_filtered = data_filtered[data_filtered['Battery'] >= min_battery]
-
-        # Tampilkan hasil
-        st.subheader("📊 Hasil Rekomendasi:")
-        if not data_filtered.empty:
-            recommended = data_filtered.sort_values(by='Similarity', ascending=False)
-            recommended['No'] = range(1, len(recommended) + 1)
-            st.dataframe(
-                recommended[['No', 'Brand', 'Type', 'RAM (GB)', 'ROM (GB)', 'Ratings', 'Price', 'Camera', 'Battery', 'Similarity']],
-                use_container_width=True,
-                hide_index=True
-            )
-        else:
-            st.warning("❌ Tidak ada smartphone yang memenuhi kriteria pencarian Anda.")
-    elif not input_name:
-        st.info("📝 Silakan masukkan nama HP terlebih dahulu sebelum menampilkan rekomendasi.")
+        st.dataframe(
+            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']],
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
 else:
-    st.info("☝ Silakan aktifkan minimal satu filter untuk memulai pencarian.")
+    st.info("☝ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
