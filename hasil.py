@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 # Load dataset
 data = pd.read_excel('data_smartphones.xlsx')
