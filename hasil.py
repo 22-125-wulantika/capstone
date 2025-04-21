@@ -62,6 +62,15 @@ if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filt
     # Menampilkan hasil rekomendasi
     st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
 
+    # Input jumlah rekomendasi yang ingin ditampilkan
+    jumlah_rekomendasi = st.number_input(
+        "Masukkan jumlah rekomendasi yang diinginkan", 
+        min_value=1, 
+        max_value=min(10, len(data_filtered)), 
+        value=5, 
+        step=1
+    )
+    
     if not data_filtered.empty:
         # Ambil indeks dari smartphone referensi pertama
         idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
