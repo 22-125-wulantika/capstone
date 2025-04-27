@@ -8,7 +8,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 data = pd.read_excel('data_smartphones.xlsx')
 
 # Fitur yang digunakan untuk similarity
-fitur = ['Price', 'Ratings', 'RAM (GB)', 'Battery', 'ROM (GB)']
+fitur = ['Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery', ]
 
 # Normalisasi fitur
 scaler = MinMaxScaler()
