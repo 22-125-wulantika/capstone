@@ -31,7 +31,7 @@ if selected_kriteria:
 
     for kriteria in selected_kriteria:
         if kriteria == 'Price':
-            value = st.number_input(f"Masukkan {kriteria.capitalize()} (Rp)", min_value=0.0)
+            value = st.number_input(f"Masukkan {kriteria.capitalize()} (Rp)", min_value=0)
         elif kriteria == 'Ratings':
             value = st.slider(f"Masukkan {kriteria.capitalize()}", min_value=0.0, max_value=5.0, step=0.1)
         else:
