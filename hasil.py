@@ -12,12 +12,12 @@ st.dataframe(data)
 # Pilih kriteria pencarian
 st.subheader("Pilih Kriteria Pencarian")
 available_criteria = {
-    'Harga': 'harga',
-    'Rating': 'rating',
+    'Price': 'harga',
+    'Ratings': 'rating',
     'RAM': 'ram',
     'ROM': 'rom',
-    'Kamera': 'kamera',
-    'Baterai': 'baterai'
+    'Camera': 'kamera',
+    'Battery': 'baterai'
 }
 
 selected_criteria = st.multiselect(
@@ -32,7 +32,7 @@ if selected_criteria:
     st.subheader("Masukkan Nilai Kriteria yang Dipilih")
     for criteria in selected_criteria:
         key = available_criteria[criteria]
-        if criteria == 'Rating':
+        if criteria == 'Ratings':
             user_input[key] = st.slider(f'{criteria} Minimal', 0.0, 5.0, 4.0, step=0.1)
         else:
             user_input[key] = st.number_input(f'{criteria}', min_value=0)
