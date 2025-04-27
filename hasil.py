@@ -12,12 +12,12 @@ st.dataframe(data)
 # Pilih kriteria pencarian
 st.subheader("Pilih Kriteria Pencarian")
 available_criteria = {
-    'Price': 'harga',
-    'Ratings': 'rating',
-    'RAM': 'ram',
-    'ROM': 'rom',
-    'Camera': 'kamera',
-    'Battery': 'baterai'
+    'Harga': 'Price',
+    'Rating': 'Ratings',
+    'RAM': 'RAM (GB)',
+    'ROM': 'ROM (GB)',
+    'Kamera': 'Camera',
+    'Baterai': 'Battery'
 }
 
 selected_criteria = st.multiselect(
