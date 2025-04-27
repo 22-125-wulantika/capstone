@@ -15,7 +15,7 @@ st.title("Sistem Rekomendasi HP - Content Based Filtering")
 st.header("Pilih Kriteria yang Diinginkan")
 
 # Daftar kriteria yang bisa dipilih
-kriteria_list = ['harga', 'rating', 'ram', 'rom', 'kamera', 'baterai']
+kriteria_list = ['Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']
 
 # Form input kriteria
 selected_kriteria = st.multiselect(
