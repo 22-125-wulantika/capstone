@@ -28,8 +28,16 @@ selected_kriteria = st.multiselect(
 if selected_kriteria:
     input_kriteria = {}
     st.subheader("Masukkan Nilai Untuk Setiap Kriteria yang Dipilih")
+
     for kriteria in selected_kriteria:
-        value = st.number_input(f"Masukkan nilai untuk {kriteria.capitalize()}", min_value=0.0)
+        if kriteria == 'Price':
+            value = st.number_input(f"Masukkan {kriteria.capitalize()} (Rp)", min_value=0.0)
+        elif kriteria == 'Ratings':
+            value = st.slider(f"Masukkan {kriteria.capitalize()}", min_value=0.0, max_value=5.0, step=0.1)
+        else:
+            # Ambil unique value dari dataset untuk selectbox
+            options = sorted(df[kriteria].unique())
+            value = st.selectbox(f"Pilih {kriteria.upper()}", options)
         input_kriteria[kriteria] = value
 
     # Pilihan jumlah rekomendasi
