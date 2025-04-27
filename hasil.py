@@ -10,7 +10,8 @@ def load_data():
 
 df = load_data()
 
-st.title("Sistem Rekomendasi HP - Content Based Filtering")
+st.header("📋 Data Smartphone Tersedia")
+st.dataframe(df)
 
 st.header("Pilih Kriteria yang Diinginkan")
 
