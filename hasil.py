@@ -10,39 +10,39 @@ def load_data():
 
 df = load_data()
 
+st.title("📱 Sistem Rekomendasi HP - Content Based Filtering")
+
+# Tampilkan data awal
 st.header("📋 Data Smartphone Tersedia")
 st.dataframe(df)
 
-st.header("Pilih Kriteria yang Diinginkan")
+st.header("🛠️ Pilih Kriteria yang Diinginkan")
 
-# Daftar kriteria yang bisa dipilih
-kriteria_list = ['Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']
+# Daftar semua kriteria
+all_kriteria = ['Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']
 
-# Form input kriteria
-selected_kriteria = st.multiselect(
-    "Pilih kriteria yang ingin dijadikan dasar rekomendasi:",
-    kriteria_list,
-    default=None
-)
+# Form input kriteria menggunakan checkbox
+selected_kriteria = []
+input_kriteria = {}
 
-# Pastikan user memilih minimal satu kriteria
-if selected_kriteria:
-    input_kriteria = {}
-    st.subheader("Masukkan Nilai Untuk Setiap Kriteria yang Dipilih")
+st.subheader("✅ Checklist Kriteria yang Ingin Digunakan")
 
-    for kriteria in selected_kriteria:
+for kriteria in all_kriteria:
+    if st.checkbox(f"Gunakan {kriteria}?", key=kriteria):
+        selected_kriteria.append(kriteria)
         if kriteria == 'Price':
             value = st.number_input(f"Masukkan {kriteria.capitalize()} (Rp)", min_value=0)
         elif kriteria == 'Ratings':
             value = st.slider(f"Masukkan {kriteria.capitalize()}", min_value=0.0, max_value=5.0, step=0.1)
         else:
-            # Ambil unique value dari dataset untuk selectbox
             options = sorted(df[kriteria].unique())
-            value = st.selectbox(f"Pilih {kriteria.upper()}", options)
+            value = st.selectbox(f"Pilih {kriteria.upper()}", options, key=kriteria+'_input')
         input_kriteria[kriteria] = value
 
+# Pastikan user memilih minimal satu kriteria
+if selected_kriteria:
     # Pilihan jumlah rekomendasi
-    st.subheader("Jumlah Rekomendasi yang Ingin Ditampilkan")
+    st.subheader("🔢 Jumlah Rekomendasi yang Ingin Ditampilkan")
     jumlah_rekomendasi = st.number_input("Masukkan jumlah rekomendasi", min_value=1, max_value=len(df), step=1)
 
     # Tombol untuk mencari rekomendasi
@@ -65,8 +65,9 @@ if selected_kriteria:
         rekomendasi_indices = similarity.argsort()[0][::-1][:jumlah_rekomendasi]
 
         # Tampilkan hasil rekomendasi
-        st.subheader("Hasil Rekomendasi HP")
+        st.subheader("🏆 Hasil Rekomendasi HP")
         st.dataframe(df.iloc[rekomendasi_indices])
 
 else:
-    st.warning("Silakan pilih minimal satu kriteria terlebih dahulu!")
+    st.info("Silakan pilih minimal satu kriteria terlebih dahulu untuk mendapatkan rekomendasi!")
+
