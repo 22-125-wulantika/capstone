@@ -4,7 +4,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 
 # Load dataset
-data = pd.read_excel('data_smartphones.xlsx')
+def load_data():
+    df = pd.read_excel('data_smartphones.xlsx')
+    return df
+
+df = load_data()
 
 st.title("Sistem Rekomendasi HP - Content Based Filtering")
 
