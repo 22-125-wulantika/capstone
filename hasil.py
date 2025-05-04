@@ -23,7 +23,7 @@ use_rom = st.checkbox("Gunakan ROM (GB)")
 use_camera = st.checkbox("Gunakan Kamera (Camera)")
 use_battery = st.checkbox("Gunakan Baterai (Battery)")
 
-# Mapping checkbox ke nama kolom data
+# Mapping checkbox ke nama kolom
 criteria_map = {
     "Price": use_price,
     "Ratings": use_ratings,
@@ -42,23 +42,27 @@ else:
     # Input jumlah hasil rekomendasi
     top_n = st.number_input("📊 Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
-    # Input nilai user untuk tiap kriteria yang dipilih
+    # Input nilai preferensi user dengan nilai default dari dataset
     st.subheader("🎯 Masukkan Nilai Preferensi Anda")
     user_input = {}
     for crit in selected_criteria:
-        val = st.number_input(f"{crit}:", key=crit)
+        # Tangani nilai kosong
+        df[crit] = pd.to_numeric(df[crit], errors='coerce')
+        df[crit].fillna(df[crit].median(), inplace=True)
+
+        min_val = float(df[crit].min())
+        max_val = float(df[crit].max())
+        mean_val = float(df[crit].mean())
+
+        # Tampilkan input dengan batas sesuai data
+        val = st.number_input(
+            f"{crit}:", min_value=min_val, max_value=max_val, value=mean_val, step=1.0, format="%.2f"
+        )
         user_input[crit] = val
 
     if st.button("💡 Rekomendasikan"):
-        # Filter dan normalisasi data hanya berdasarkan kriteria terpilih
-        df_selected = df[selected_criteria].copy()
-
-        # Ubah ke numeric dan isi nilai kosong jika ada
-        for col in selected_criteria:
-            df_selected[col] = pd.to_numeric(df_selected[col], errors='coerce')
-            df_selected[col].fillna(df_selected[col].median(), inplace=True)
-
         # Normalisasi data
+        df_selected = df[selected_criteria].copy()
         scaler = MinMaxScaler()
         df_scaled = scaler.fit_transform(df_selected)
 
