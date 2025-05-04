@@ -14,6 +14,8 @@ if "Camera" in df.columns:
 st.title("📱 Sistem Rekomendasi Smartphone")
 st.subheader("📑 Dataset Smartphone")
 st.dataframe(df)
+
+# Pilihan kriteria
 st.subheader("🔍 Spesifikasi Smartphone")
 
 # Checkbox untuk memilih kriteria
@@ -40,9 +42,7 @@ selected_criteria = [key for key, value in criteria_map.items() if value]
 if not selected_criteria:
     st.warning("❗ Silakan pilih minimal satu spesifikasi!")
 else:
-    # Input jumlah rekomendasi
-    top_n = st.number_input("📊 Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
-
+    # Input preferensi pengguna
     st.subheader("🎯 Masukkan Preferensi Anda")
     user_input = {}
 
@@ -52,32 +52,32 @@ else:
         elif crit == "Ratings":
             user_input[crit] = st.slider("Pilih Rating Minimal", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
         elif crit in ["RAM (GB)", "ROM (GB)", "Camera", "Battery"]:
-            # Ambil nilai unik dari dataset untuk opsi selectbox
             options = sorted(df[crit].dropna().unique())
             user_input[crit] = st.selectbox(f"Pilih {crit}", options)
 
+    # Jumlah hasil rekomendasi
+    st.subheader("📊 Jumlah Rekomendasi")
+    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
+
+    # Tombol rekomendasi
     if st.button("💡 Rekomendasikan"):
         # Filter dan normalisasi data
         df_selected = df[selected_criteria].copy()
 
-        # Pastikan semua kolom numeric
         for col in selected_criteria:
             df_selected[col] = pd.to_numeric(df_selected[col], errors='coerce')
             df_selected[col].fillna(df_selected[col].median(), inplace=True)
 
-        # Normalisasi
         scaler = MinMaxScaler()
         df_scaled = scaler.fit_transform(df_selected)
 
-        # Input user normalisasi
         user_input_df = pd.DataFrame([user_input])
         user_scaled = scaler.transform(user_input_df)[0]
 
-        # Hitung Euclidean distance
         distances = [norm(row - user_scaled) for row in df_scaled]
         df["Similarity Score"] = distances
 
-        # Top N rekomendasi
+        # Ambil top N hasil rekomendasi
         result = df.sort_values(by="Similarity Score").head(top_n)
 
         st.subheader("📋 Hasil Rekomendasi Smartphone:")
