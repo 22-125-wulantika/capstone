@@ -1,73 +1,59 @@
 import streamlit as st
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.preprocessing import MinMaxScaler
 
-# Load dataset
-def load_data():
-    df = pd.read_excel('data_smartphones.xlsx')
-    return df
+# Load data
+df = pd.read_excel("data_smartphones.xlsx")
 
-df = load_data()
+# Preprocessing Camera: ubah "16MP" → 16
+df["Camera"] = df["Camera"].str.replace("MP", "").astype(float)
 
-st.title("📱 Sistem Rekomendasi HP - Content Based Filtering")
+# Judul aplikasi
+st.title("Sistem Rekomendasi Smartphone")
 
-# Tampilkan data awal
-st.header("📋 Data Smartphone Tersedia")
-st.dataframe(df)
+# Pilihan kriteria
+criteria_options = ["Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
+selected_criteria = st.multiselect("Pilih kriteria pencarian:", criteria_options)
 
-st.header("🛠️ Pilih Kriteria yang Diinginkan")
-
-# Daftar semua kriteria
-all_kriteria = ['Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery']
-
-# Form input kriteria menggunakan checkbox
-selected_kriteria = []
-input_kriteria = {}
-
-st.subheader("✅ Checklist Kriteria yang Ingin Digunakan")
-
-for kriteria in all_kriteria:
-    if st.checkbox(f"Gunakan {kriteria}?", key=kriteria):
-        selected_kriteria.append(kriteria)
-        if kriteria == 'Price':
-            value = st.number_input(f"Masukkan {kriteria.capitalize()} (Rp)", min_value=0)
-        elif kriteria == 'Ratings':
-            value = st.slider(f"Masukkan {kriteria.capitalize()}", min_value=0.0, max_value=5.0, step=0.1)
-        else:
-            options = sorted(df[kriteria].unique())
-            value = st.selectbox(f"Pilih {kriteria.upper()}", options, key=kriteria+'_input')
-        input_kriteria[kriteria] = value
-
-# Pastikan user memilih minimal satu kriteria
-if selected_kriteria:
-    # Pilihan jumlah rekomendasi
-    st.subheader("🔢 Jumlah Rekomendasi yang Ingin Ditampilkan")
-    jumlah_rekomendasi = st.number_input("Masukkan jumlah rekomendasi", min_value=1, max_value=len(df), step=1)
-
-    # Tombol untuk mencari rekomendasi
-    if st.button("Cari Rekomendasi"):
-        # Preprocessing: hanya kolom yang dipilih
-        df_selected = df[selected_kriteria]
-
-        # Scaling data
-        scaler = MinMaxScaler()
-        df_scaled = scaler.fit_transform(df_selected)
-
-        # Data user
-        user_data = pd.DataFrame([input_kriteria])
-        user_scaled = scaler.transform(user_data)
-
-        # Hitung similarity
-        similarity = cosine_similarity(user_scaled, df_scaled)
-
-        # Ambil indeks rekomendasi terbaik
-        rekomendasi_indices = similarity.argsort()[0][::-1][:jumlah_rekomendasi]
-
-        # Tampilkan hasil rekomendasi
-        st.subheader("🏆 Hasil Rekomendasi HP")
-        st.dataframe(df.iloc[rekomendasi_indices])
-
+# Validasi input
+if not selected_criteria:
+    st.warning("Silakan pilih minimal satu kriteria!")
 else:
-    st.info("Silakan pilih minimal satu kriteria terlebih dahulu untuk mendapatkan rekomendasi!")
+    # Input jumlah hasil rekomendasi
+    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
+    # Input nilai tiap kriteria
+    user_input = {}
+    for crit in selected_criteria:
+        val = st.number_input(f"Masukkan nilai untuk {crit}:", value=0.0)
+        user_input[crit] = val
+
+    if st.button("Rekomendasikan"):
+        # Normalisasi data
+        from sklearn.preprocessing import MinMaxScaler
+
+        df_norm = df.copy()
+        scaler = MinMaxScaler()
+        numeric_cols = ["Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
+        df_norm[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+
+        # Normalisasi input user
+        user_vector = []
+        for col in numeric_cols:
+            if col in user_input:
+                val = user_input[col]
+                # Transform dengan scaler
+                val_scaled = scaler.transform(pd.DataFrame([{col: val} if col in user_input else {col: 0} for col in numeric_cols]))[0][numeric_cols.index(col)]
+            else:
+                val_scaled = 0  # default jika tidak dipilih
+            user_vector.append(val_scaled)
+
+        # Hitung kemiripan (euclidean distance)
+        from numpy.linalg import norm
+        distances = df_norm[numeric_cols].apply(lambda row: norm(row.values - user_vector), axis=1)
+
+        # Ambil top N terdekat
+        df["Similarity Score"] = distances
+        result = df.sort_values(by="Similarity Score").head(top_n)
+
+        st.subheader("Hasil Rekomendasi:")
+        st.dataframe(result.drop(columns=["Similarity Score"]))
