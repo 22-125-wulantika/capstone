@@ -13,7 +13,7 @@ if "Camera" in df.columns:
 # Judul aplikasi
 st.title("📱 Sistem Rekomendasi Smartphone")
 st.subheader("📑 Dataset Smartphone")
-st.dataframe(df)
+st.dataframe(df, use_container_width=True)
 
 # Pilihan kriteria
 st.subheader("🔍 Spesifikasi Smartphone")
@@ -75,10 +75,10 @@ else:
         user_scaled = scaler.transform(user_input_df)[0]
 
         distances = [norm(row - user_scaled) for row in df_scaled]
-        df["Similarity Score"] = distances
+        df["Skor Kemiripan"] = distances
 
         # Ambil top N hasil rekomendasi
-        result = df.sort_values(by="Similarity Score").head(top_n)
+        result = df.sort_values(by="Skor Kemiripan").head(top_n)
 
         st.subheader("📋 Hasil Rekomendasi Smartphone:")
-        st.dataframe(result.drop(columns=["Similarity Score"]))
+        st.dataframe(result[["Nama", *selected_criteria, "Skor Kemiripan"]].reset_index(drop=True), use_container_width=True)
