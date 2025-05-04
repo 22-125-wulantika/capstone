@@ -5,6 +5,8 @@ from numpy.linalg import norm
 
 # Load dataset
 df = pd.read_excel("data_smartphones.xlsx")
+st.subheader("📑 Dataset Smartphone")
+st.dataframe(df)
 
 # Preprocessing kolom Camera
 if "Camera" in df.columns:
