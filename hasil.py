@@ -3,53 +3,77 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from numpy.linalg import norm
 
-# Load data
+# Load dataset
 df = pd.read_excel("data_smartphones.xlsx")
 
-# Preprocessing Camera
-df["Camera"] = df["Camera"].str.replace("MP", "", regex=False).astype(float)
+# Preprocessing kolom kamera jika perlu
+if "kamera" in df.columns:
+    df["kamera"] = df["kamera"].astype(str).str.replace("MP", "", regex=False).astype(float)
 
-# Judul aplikasi
+# Mapping pilihan untuk user (Bahasa Indonesia → nama kolom)
+available_criteria = {
+    'Harga': 'harga',
+    'Rating': 'rating',
+    'RAM': 'ram',
+    'ROM': 'rom',
+    'Kamera': 'kamera',
+    'Baterai': 'baterai'
+}
+
+# Judul Aplikasi
 st.title("Sistem Rekomendasi Smartphone")
 
 # Pilihan kriteria
-criteria_options = ["Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
-selected_criteria = st.multiselect("Pilih kriteria pencarian:", criteria_options)
+st.subheader("Pilih Kriteria Pencarian")
+selected_labels = st.multiselect("Pilih kriteria yang diinginkan:", list(available_criteria.keys()))
 
-if not selected_criteria:
+# Validasi input
+if not selected_labels:
     st.warning("Silakan pilih minimal satu kriteria!")
 else:
-    # Input jumlah hasil rekomendasi
+    selected_columns = [available_criteria[label] for label in selected_labels]
+
+    # Input jumlah rekomendasi
     top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
-    # Input nilai untuk setiap kriteria yang dipilih
+    # Input nilai preferensi user
     user_input = {}
-    for crit in selected_criteria:
-        val = st.number_input(f"Masukkan nilai untuk {crit}:")
-        user_input[crit] = val
+    for label in selected_labels:
+        val = st.number_input(f"Masukkan nilai untuk {label}:")
+        user_input[available_criteria[label]] = val
 
     if st.button("Rekomendasikan"):
-        # Normalisasi hanya kolom yang dipilih user
-        df_selected = df[selected_criteria].copy()
+        # Cek apakah kolom tersedia di dataset
+        missing_cols = [col for col in selected_columns if col not in df.columns]
 
-        # Pastikan kolom numeric
-        for col in selected_criteria:
-            df_selected[col] = pd.to_numeric(df_selected[col], errors="coerce")
-            df_selected[col].fillna(df_selected[col].median(), inplace=True)
+        if missing_cols:
+            st.warning("Beberapa kriteria tidak ditemukan di dataset. Menggunakan kriteria terdekat yang tersedia.")
+            # Ambil kolom yang tersedia saja
+            selected_columns = [col for col in selected_columns if col in df.columns]
+            user_input = {k: v for k, v in user_input.items() if k in selected_columns}
 
-        scaler = MinMaxScaler()
-        df_selected_scaled = scaler.fit_transform(df_selected)
+        # Lanjut jika masih ada kolom yang bisa digunakan
+        if selected_columns:
+            df_selected = df[selected_columns].copy()
+            for col in selected_columns:
+                df_selected[col] = pd.to_numeric(df_selected[col], errors="coerce")
+                df_selected[col].fillna(df_selected[col].median(), inplace=True)
 
-        # Normalisasi input user berdasarkan kolom terpilih
-        user_input_df = pd.DataFrame([user_input])
-        user_scaled = scaler.transform(user_input_df)[0]
+            # Normalisasi
+            scaler = MinMaxScaler()
+            df_scaled = scaler.fit_transform(df_selected)
 
-        # Hitung Euclidean distance
-        distances = [norm(row - user_scaled) for row in df_selected_scaled]
+            # Normalisasi input user
+            user_df = pd.DataFrame([user_input])
+            user_scaled = scaler.transform(user_df)[0]
 
-        # Ambil top N hasil
-        df["Similarity Score"] = distances
-        result = df.sort_values(by="Similarity Score").head(top_n)
+            # Hitung Euclidean distance
+            distances = [norm(row - user_scaled) for row in df_scaled]
 
-        st.subheader("Hasil Rekomendasi:")
-        st.dataframe(result.drop(columns=["Similarity Score"]))
+            df["Similarity Score"] = distances
+            result = df.sort_values(by="Similarity Score").head(top_n)
+
+            st.subheader("Hasil Rekomendasi:")
+            st.dataframe(result.drop(columns=["Similarity Score"]))
+        else:
+            st.error("Tidak ada kriteria yang cocok dengan dataset.")
