@@ -12,11 +12,8 @@ if "Camera" in df.columns:
 
 # Judul aplikasi
 st.title("📱 Sistem Rekomendasi Smartphone")
-
-# Menampilkan dataset (opsional)
-if st.checkbox("Tampilkan Dataset Smartphone"):
-    st.subheader("📑 Data Smartphone Tersedia")
-    st.dataframe(df)
+st.subheader("📑 Data Smartphone Tersedia")
+st.dataframe(df)
 
 # Filter kriteria
 st.subheader("🔍 Silakan Pilih Kriteria yang Diinginkan")
