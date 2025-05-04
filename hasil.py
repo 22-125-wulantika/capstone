@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from numpy.linalg import norm
 
 # Load dataset
-data = pd.read_excel('data_smartphones.xlsx')
+df = pd.read_excel("data_smartphones.xlsx")
 
 # Preprocessing kolom Camera
 if "Camera" in df.columns:
