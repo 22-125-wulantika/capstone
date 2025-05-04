@@ -82,12 +82,5 @@ else:
 
         st.subheader("📋 Hasil Rekomendasi Smartphone:")
         # Ganti nama kolom untuk tampil lebih baku
-        result = result.rename(columns={"Similarity Score": "Skor Kemiripan"})
-        
-        # Pilih kolom yang akan ditampilkan
-        display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Skor Kemiripan"]
-        
-        # Tampilkan hasil tanpa index
-        st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
-
+        st.dataframe(result.drop(columns=["Similarity Score"]))
 
