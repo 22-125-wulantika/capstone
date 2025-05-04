@@ -81,4 +81,4 @@ else:
         result = df.sort_values(by="Skor Kemiripan").head(top_n)
 
         st.subheader("📋 Hasil Rekomendasi Smartphone:")
-        st.dataframe(result[["Nama", *selected_criteria, "Skor Kemiripan"]].reset_index(drop=True), use_container_width=True)
+        st.dataframe(result[["Brand", *selected_criteria, "Skor Kemiripan"]].reset_index(drop=True), use_container_width=True)
