@@ -7,49 +7,71 @@ from numpy.linalg import norm
 df = pd.read_excel("data_smartphones.xlsx")
 
 # Preprocessing Camera
-df["Camera"] = df["Camera"].str.replace("MP", "", regex=False).astype(float)
+if "Camera" in df.columns:
+    df["Camera"] = df["Camera"].astype(str).str.replace("MP", "", regex=False).astype(float)
 
 # Judul aplikasi
-st.title("Sistem Rekomendasi Smartphone")
+st.title("📱 Sistem Rekomendasi Smartphone")
 
-# Pilihan kriteria
-criteria_options = ["Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
-selected_criteria = st.multiselect("Pilih kriteria pencarian:", criteria_options)
+st.subheader("🔍 Pilih Kriteria Smartphone")
+
+# Checkbox untuk setiap kriteria
+use_price = st.checkbox("Gunakan Harga (Price)")
+use_ratings = st.checkbox("Gunakan Rating (Ratings)")
+use_ram = st.checkbox("Gunakan RAM (GB)")
+use_rom = st.checkbox("Gunakan ROM (GB)")
+use_camera = st.checkbox("Gunakan Kamera (Camera)")
+use_battery = st.checkbox("Gunakan Baterai (Battery)")
+
+# Mapping checkbox ke nama kolom data
+criteria_map = {
+    "Price": use_price,
+    "Ratings": use_ratings,
+    "RAM (GB)": use_ram,
+    "ROM (GB)": use_rom,
+    "Camera": use_camera,
+    "Battery": use_battery
+}
+
+# Kriteria yang dipilih
+selected_criteria = [key for key, value in criteria_map.items() if value]
 
 if not selected_criteria:
-    st.warning("Silakan pilih minimal satu kriteria!")
+    st.warning("❗ Silakan pilih minimal satu kriteria!")
 else:
     # Input jumlah hasil rekomendasi
-    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
+    top_n = st.number_input("📊 Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
-    # Input nilai untuk setiap kriteria yang dipilih
+    # Input nilai user untuk tiap kriteria yang dipilih
+    st.subheader("🎯 Masukkan Nilai Preferensi Anda")
     user_input = {}
     for crit in selected_criteria:
-        val = st.number_input(f"Masukkan nilai untuk {crit}:")
+        val = st.number_input(f"{crit}:", key=crit)
         user_input[crit] = val
 
-    if st.button("Rekomendasikan"):
-        # Normalisasi hanya kolom yang dipilih user
+    if st.button("💡 Rekomendasikan"):
+        # Filter dan normalisasi data hanya berdasarkan kriteria terpilih
         df_selected = df[selected_criteria].copy()
 
-        # Pastikan kolom numeric
+        # Ubah ke numeric dan isi nilai kosong jika ada
         for col in selected_criteria:
-            df_selected[col] = pd.to_numeric(df_selected[col], errors="coerce")
+            df_selected[col] = pd.to_numeric(df_selected[col], errors='coerce')
             df_selected[col].fillna(df_selected[col].median(), inplace=True)
 
+        # Normalisasi data
         scaler = MinMaxScaler()
-        df_selected_scaled = scaler.fit_transform(df_selected)
+        df_scaled = scaler.fit_transform(df_selected)
 
-        # Normalisasi input user berdasarkan kolom terpilih
+        # Normalisasi input user
         user_input_df = pd.DataFrame([user_input])
         user_scaled = scaler.transform(user_input_df)[0]
 
-        # Hitung Euclidean distance
-        distances = [norm(row - user_scaled) for row in df_selected_scaled]
+        # Hitung jarak Euclidean
+        distances = [norm(row - user_scaled) for row in df_scaled]
+        df["Similarity Score"] = distances
 
         # Ambil top N hasil
-        df["Similarity Score"] = distances
         result = df.sort_values(by="Similarity Score").head(top_n)
 
-        st.subheader("Hasil Rekomendasi:")
+        st.subheader("📋 Hasil Rekomendasi Smartphone:")
         st.dataframe(result.drop(columns=["Similarity Score"]))
