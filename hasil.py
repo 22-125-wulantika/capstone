@@ -5,8 +5,6 @@ from numpy.linalg import norm
 
 # Load dataset
 df = pd.read_excel("data_smartphones.xlsx")
-st.subheader("📑 Dataset Smartphone")
-st.dataframe(df)
 
 # Preprocessing kolom Camera
 if "Camera" in df.columns:
@@ -14,7 +12,8 @@ if "Camera" in df.columns:
 
 # Judul aplikasi
 st.title("📱 Sistem Rekomendasi Smartphone")
-
+st.subheader("📑 Dataset Smartphone")
+st.dataframe(df)
 st.subheader("🔍 Pilih Kriteria Smartphone")
 
 # Checkbox untuk memilih kriteria
