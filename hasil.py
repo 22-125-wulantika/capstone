@@ -40,7 +40,7 @@ selected_criteria = [key for key, value in criteria_map.items() if value]
 if not selected_criteria:
     st.warning("❗ Silakan pilih minimal satu spesifikasi!")
 else:
-    # Input jumlah rekomendasi — dipindahkan ke sini
+    # Input jumlah rekomendasi
     top_n = st.number_input("📊 Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
     st.subheader("🎯 Masukkan Preferensi Anda")
