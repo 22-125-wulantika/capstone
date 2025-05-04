@@ -1,11 +1,13 @@
 import streamlit as st
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from numpy.linalg import norm
 
 # Load data
 df = pd.read_excel("data_smartphones.xlsx")
 
-# Preprocessing Camera: ubah "16MP" → 16
-df["Camera"] = df["Camera"].str.replace("MP", "").astype(float)
+# Preprocessing Camera
+df["Camera"] = df["Camera"].str.replace("MP", "", regex=False).astype(float)
 
 # Judul aplikasi
 st.title("Sistem Rekomendasi Smartphone")
@@ -14,44 +16,38 @@ st.title("Sistem Rekomendasi Smartphone")
 criteria_options = ["Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
 selected_criteria = st.multiselect("Pilih kriteria pencarian:", criteria_options)
 
-# Validasi input
 if not selected_criteria:
     st.warning("Silakan pilih minimal satu kriteria!")
 else:
     # Input jumlah hasil rekomendasi
     top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
-    # Input nilai tiap kriteria
+    # Input nilai untuk setiap kriteria yang dipilih
     user_input = {}
     for crit in selected_criteria:
         val = st.number_input(f"Masukkan nilai untuk {crit}:")
         user_input[crit] = val
 
     if st.button("Rekomendasikan"):
-        # Normalisasi data
-        from sklearn.preprocessing import MinMaxScaler
+        # Normalisasi hanya kolom yang dipilih user
+        df_selected = df[selected_criteria].copy()
 
-        df_norm = df.copy()
+        # Pastikan kolom numeric
+        for col in selected_criteria:
+            df_selected[col] = pd.to_numeric(df_selected[col], errors="coerce")
+            df_selected[col].fillna(df_selected[col].median(), inplace=True)
+
         scaler = MinMaxScaler()
-        numeric_cols = ["Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
-        df_norm[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+        df_selected_scaled = scaler.fit_transform(df_selected)
 
-        # Normalisasi input user
-        user_vector = []
-        for col in numeric_cols:
-            if col in user_input:
-                val = user_input[col]
-                # Transform dengan scaler
-                val_scaled = scaler.transform(pd.DataFrame([{col: val} if col in user_input else {col: 0} for col in numeric_cols]))[0][numeric_cols.index(col)]
-            else:
-                val_scaled = 0  # default jika tidak dipilih
-            user_vector.append(val_scaled)
+        # Normalisasi input user berdasarkan kolom terpilih
+        user_input_df = pd.DataFrame([user_input])
+        user_scaled = scaler.transform(user_input_df)[0]
 
-        # Hitung kemiripan (euclidean distance)
-        from numpy.linalg import norm
-        distances = df_norm[numeric_cols].apply(lambda row: norm(row.values - user_vector), axis=1)
+        # Hitung Euclidean distance
+        distances = [norm(row - user_scaled) for row in df_selected_scaled]
 
-        # Ambil top N terdekat
+        # Ambil top N hasil
         df["Similarity Score"] = distances
         result = df.sort_values(by="Similarity Score").head(top_n)
 
