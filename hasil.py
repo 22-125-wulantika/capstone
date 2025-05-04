@@ -24,7 +24,7 @@ else:
     # Input nilai tiap kriteria
     user_input = {}
     for crit in selected_criteria:
-        val = st.number_input(f"Masukkan nilai untuk {crit}:", value=0.0)
+        val = st.number_input(f"Masukkan nilai untuk {crit}:")
         user_input[crit] = val
 
     if st.button("Rekomendasikan"):
