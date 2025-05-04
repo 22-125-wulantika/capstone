@@ -14,7 +14,7 @@ if "Camera" in df.columns:
 st.title("📱 Sistem Rekomendasi Smartphone")
 st.subheader("📑 Dataset Smartphone")
 st.dataframe(df)
-st.subheader("🔍 Pilih Kriteria Smartphone")
+st.subheader("🔍 Spesifikasi Smartphone")
 
 # Checkbox untuk memilih kriteria
 use_price = st.checkbox("Gunakan Harga (Price)")
@@ -38,7 +38,7 @@ criteria_map = {
 selected_criteria = [key for key, value in criteria_map.items() if value]
 
 if not selected_criteria:
-    st.warning("❗ Silakan pilih minimal satu kriteria!")
+    st.warning("❗ Silakan pilih minimal satu spesifikasi!")
 else:
     # Input jumlah rekomendasi
     top_n = st.number_input("📊 Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
