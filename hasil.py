@@ -58,7 +58,7 @@ else:
 
     # Jumlah hasil rekomendasi
     st.subheader("📊 Jumlah Rekomendasi")
-    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
+    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=800, value=5)
 
     if st.button("💡 Tampilkan Rekomendasi"):
         df_selected = df[selected_criteria].copy()
