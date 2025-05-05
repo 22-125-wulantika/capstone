@@ -6,10 +6,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Load dataset
 df = pd.read_excel("data_smartphones.xlsx")
 
-# Preprocessing kolom Camera
-# if "Camera" in df.columns:
-#     df["Camera"] = df["Camera"].astype(str).str.replace("MP", "", regex=False).astype(float)
-
 # Judul aplikasi
 st.title("📱 Sistem Rekomendasi Smartphone")
 st.subheader("📑 Dataset Smartphone")
@@ -96,11 +92,12 @@ else:
 
         st.subheader("📋 Rekomendasi Smartphone:")
         display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
-       # Reset index dan tambahkan kolom No
+        
+        # Reset index dan tambahkan kolom No
         result.reset_index(drop=True, inplace=True)
         result.index = result.index + 1
         result.insert(0, "No", result.index)
-        
+
         # Tampilkan hasil
         display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
         st.dataframe(result[display_cols].to_dict(orient="records"), use_container_width=True)
