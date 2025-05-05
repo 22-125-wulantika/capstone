@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Load dataset
-df = pd.read_excel("data.xlsx")
+df = pd.read_excel("data_smartphones.xlsx")
 
 # Preprocessing kolom Camera
 if "Camera" in df.columns:
