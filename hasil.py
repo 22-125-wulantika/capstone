@@ -91,7 +91,7 @@ else:
         result["Similarity Score"] = top_similarities
 
         st.subheader("📋 Rekomendasi Smartphone:")
-        display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+        display_cols = ["Brand", "Type", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
         
         # Reset index dan tambahkan kolom No
         result.reset_index(drop=True, inplace=True)
