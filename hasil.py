@@ -101,7 +101,8 @@ else:
         result.index = result.index + 1
         result.insert(0, "No", result.index)
         
-        # Tampilkan hasil
+        # Tampilkan hasil tanpa index tambahan
         display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
-        st.dataframe(result[display_cols], use_container_width=True)
+        st.dataframe(result[display_cols].style.hide(axis='index'), use_container_width=True)
+
 
