@@ -7,8 +7,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 df = pd.read_excel("data_smartphones.xlsx")
 
 # Preprocessing kolom Camera
-if "Camera" in df.columns:
-    df["Camera"] = df["Camera"].astype(str).str.replace("MP", "", regex=False).astype(float)
+# if "Camera" in df.columns:
+#     df["Camera"] = df["Camera"].astype(str).str.replace("MP", "", regex=False).astype(float)
 
 # Judul aplikasi
 st.title("📱 Sistem Rekomendasi Smartphone")
