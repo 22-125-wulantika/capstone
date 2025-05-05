@@ -4,11 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Load dataset
-df = pd.read_excel("data.xlsx")
-
-# Preprocessing kolom Camera
-if "Camera" in df.columns:
-    df["Camera"] = df["Camera"].astype(str).str.replace("MP", "", regex=False).astype(float)
+df = pd.read_excel("data_smartphones.xlsx")
 
 # Judul aplikasi
 st.title("📱 Sistem Rekomendasi Smartphone")
