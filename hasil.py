@@ -103,7 +103,7 @@ else:
         
         # Tampilkan hasil
         display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
-        st.dataframe(result[display_cols], use_container_width=True)
+        st.dataframe(use_container_width=True, hide_index=True)
 
 
 
