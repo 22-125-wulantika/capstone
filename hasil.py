@@ -103,7 +103,8 @@ else:
         
         # Tampilkan hasil
         display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
-        st.dataframe(use_container_width=True, hide_index=True)
+        st.dataframe(result[display_cols].to_dict(orient="records"), use_container_width=True)
+
 
 
 
