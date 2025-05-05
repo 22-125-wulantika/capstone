@@ -81,6 +81,4 @@ else:
         result = df.sort_values(by="Similarity Score").head(top_n)
 
         st.subheader("📋 Hasil Rekomendasi Smartphone:")
-        # Ganti nama kolom untuk tampil lebih baku
         st.dataframe(result.drop(columns=["Similarity Score"]))
-
