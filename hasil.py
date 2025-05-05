@@ -99,5 +99,5 @@ else:
         result.insert(0, "No", result.index)
 
         # Tampilkan hasil
-        display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+        display_cols = ["No", "Brand", "Type", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
         st.dataframe(result[display_cols].to_dict(orient="records"), use_container_width=True)
