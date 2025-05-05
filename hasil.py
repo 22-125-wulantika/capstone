@@ -81,4 +81,11 @@ else:
         result = df.sort_values(by="Similarity Score").head(top_n)
 
         st.subheader("📋 Hasil Rekomendasi Smartphone:")
-        st.dataframe(result.drop(columns=["Similarity Score"]))
+        # Ganti nama kolom skor
+        result = result.rename(columns={"Similarity Score": "Skor Kemiripan"})
+        
+        # Kolom yang ditampilkan
+        display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Skor Kemiripan"]
+        
+        # Tampilkan hasil tanpa index
+        st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
