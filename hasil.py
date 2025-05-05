@@ -96,12 +96,12 @@ else:
 
         st.subheader("📋 Rekomendasi Smartphone:")
         display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+       # Reset index dan tambahkan kolom No
         result.reset_index(drop=True, inplace=True)
         result.index = result.index + 1
         result.insert(0, "No", result.index)
-
+        
         # Tampilkan hasil
+        display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
         st.dataframe(result[display_cols].to_dict(orient="records"), use_container_width=True)
-
-        # Memaksa refresh halaman (opsional)
-        st.experimental_rerun()
+        
