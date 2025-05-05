@@ -15,39 +15,25 @@ st.title("📱 Sistem Rekomendasi Smartphone")
 st.subheader("📑 Dataset Smartphone")
 st.dataframe(df)
 
-# Inisialisasi session_state untuk checkbox dan input
-if 'use_price' not in st.session_state:
-    st.session_state.use_price = False
-if 'use_ratings' not in st.session_state:
-    st.session_state.use_ratings = False
-if 'use_ram' not in st.session_state:
-    st.session_state.use_ram = False
-if 'use_rom' not in st.session_state:
-    st.session_state.use_rom = False
-if 'use_camera' not in st.session_state:
-    st.session_state.use_camera = False
-if 'use_battery' not in st.session_state:
-    st.session_state.use_battery = False
-
 # Pilihan kriteria
 st.subheader("🔍 Spesifikasi Smartphone")
 
 # Checkbox untuk memilih kriteria
-st.session_state.use_price = st.checkbox("Harga", value=st.session_state.use_price)
-st.session_state.use_ratings = st.checkbox("Rating", value=st.session_state.use_ratings)
-st.session_state.use_ram = st.checkbox("RAM", value=st.session_state.use_ram)
-st.session_state.use_rom = st.checkbox("ROM", value=st.session_state.use_rom)
-st.session_state.use_camera = st.checkbox("Kamera", value=st.session_state.use_camera)
-st.session_state.use_battery = st.checkbox("Baterai", value=st.session_state.use_battery)
+use_price = st.checkbox("Harga")
+use_ratings = st.checkbox("Rating")
+use_ram = st.checkbox("RAM")
+use_rom = st.checkbox("ROM")
+use_camera = st.checkbox("Kamera")
+use_battery = st.checkbox("Baterai")
 
 # Mapping nama kriteria dan checkbox
 criteria_map = {
-    "Price": st.session_state.use_price,
-    "Ratings": st.session_state.use_ratings,
-    "RAM (GB)": st.session_state.use_ram,
-    "ROM (GB)": st.session_state.use_rom,
-    "Camera": st.session_state.use_camera,
-    "Battery": st.session_state.use_battery
+    "Price": use_price,
+    "Ratings": use_ratings,
+    "RAM (GB)": use_ram,
+    "ROM (GB)": use_rom,
+    "Camera": use_camera,
+    "Battery": use_battery
 }
 
 # Kriteria yang dipilih
@@ -114,4 +100,8 @@ else:
         result.index = result.index + 1
         result.insert(0, "No", result.index)
 
+        # Tampilkan hasil
         st.dataframe(result[display_cols].to_dict(orient="records"), use_container_width=True)
+
+        # Memaksa refresh halaman (opsional)
+        st.experimental_rerun()
