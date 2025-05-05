@@ -48,9 +48,9 @@ else:
 
     for crit in selected_criteria:
         if crit == "Price":
-            user_input[crit] = st.number_input("Masukkan Harga Maksimal (Rp)", min_value=0)
+            user_input[crit] = st.number_input("Masukkan Harga Maksimum (Rp)", min_value=0)
         elif crit == "Ratings":
-            user_input[crit] = st.slider("Pilih Rating Minimal", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
+            user_input[crit] = st.slider("Pilih Rating Minimun", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
         elif crit in ["RAM (GB)", "ROM (GB)", "Camera", "Battery"]:
             options = sorted(df[crit].dropna().unique())
             user_input[crit] = st.selectbox(f"Pilih {crit}", options)
