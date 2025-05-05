@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-from numpy.linalg import norm
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Load dataset
 df = pd.read_excel("data_smartphones.xlsx")
@@ -42,47 +42,45 @@ selected_criteria = [key for key, value in criteria_map.items() if value]
 if not selected_criteria:
     st.warning("❗ Silakan pilih minimal satu spesifikasi!")
 else:
-    # Input preferensi pengguna
-    st.subheader("🎯 Masukkan Preferensi Anda")
-    user_input = {}
+    st.subheader("📌 Pilih Smartphone Referensi")
 
-    for crit in selected_criteria:
-        if crit == "Price":
-            user_input[crit] = st.number_input("Masukkan Harga Maksimal (Rp)", min_value=0)
-        elif crit == "Ratings":
-            user_input[crit] = st.slider("Pilih Rating Minimal", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
-        elif crit in ["RAM (GB)", "ROM (GB)", "Camera", "Battery"]:
-            options = sorted(df[crit].dropna().unique())
-            user_input[crit] = st.selectbox(f"Pilih {crit}", options)
+    # Tampilkan daftar pilihan smartphone sebagai referensi
+    df["Label"] = df["Brand"] + " " + df["Type"]
+    referensi_label = st.selectbox("Pilih salah satu smartphone sebagai referensi:", df["Label"])
+    idx_referensi = df[df["Label"] == referensi_label].index[0]
 
     # Jumlah hasil rekomendasi
     st.subheader("📊 Jumlah Rekomendasi")
-    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
+    jumlah_rekomendasi = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
-    # Tombol rekomendasi
     if st.button("💡 Tampilkan Rekomendasi dengan Similarity"):
         df_selected = df[selected_criteria].copy()
 
-        # Ubah ke tipe numerik dan tangani missing values
+        # Pastikan semua data numerik dan hilangkan NaN
         for col in selected_criteria:
             df_selected[col] = pd.to_numeric(df_selected[col], errors='coerce')
             df_selected[col].fillna(df_selected[col].median(), inplace=True)
 
         # Normalisasi data
         scaler = MinMaxScaler()
-        df_scaled = scaler.fit_transform(df_selected)
+        scaled_data = scaler.fit_transform(df_selected)
 
-        # Normalisasi input pengguna
-        user_input_df = pd.DataFrame([user_input])
-        user_scaled = scaler.transform(user_input_df)[0]
+        # Hitung similarity matrix (cosine similarity)
+        similarity_matrix = cosine_similarity(scaled_data)
 
-        # Hitung euclidean distance (semakin kecil semakin mirip)
-        distances = [norm(row - user_scaled) for row in df_scaled]
-        df["Similarity Score"] = distances
+        # Hitung similarity antara referensi dengan seluruh data
+        similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
+        similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
 
-        # Ambil top N hasil terdekat
-        result = df.sort_values(by="Similarity Score").head(top_n)
+        # Buang referensi sendiri dari hasil
+        similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
+        top_indices = [s[0] for s in similarity_scores[:jumlah_rekomendasi]]
+        top_similarities = [s[1] for s in similarity_scores[:jumlah_rekomendasi]]
 
-        st.subheader("📋 Hasil Rekomendasi Smartphone (Berdasarkan Kemiripan):")
+        # Tampilkan hasil
+        result = df.loc[top_indices].copy()
+        result["Similarity Score"] = top_similarities
+
+        st.subheader("📋 Hasil Rekomendasi Berdasarkan Kemiripan:")
         display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
         st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
