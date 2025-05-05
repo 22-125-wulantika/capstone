@@ -47,10 +47,14 @@ else:
             user_input[crit] = st.number_input("Masukkan Harga Maksimum (Rp)", min_value=0)
         elif crit == "Ratings":
             user_input[crit] = st.slider("Pilih Rating Minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
-        elif crit in ["RAM (GB)", "ROM (GB)", "Camera", "Battery"]:
-            min_val = int(df[crit].min())
-            max_val = int(df[crit].max())
-            user_input[crit] = st.number_input(f"Masukkan nilai {crit}", min_value=min_val, max_value=max_val, value=min_val)
+        elif crit == "RAM (GB)":
+            user_input[crit] = st.number_input("Masukkan RAM (GB)", min_value=0)
+        elif crit == "ROM (GB)":
+            user_input[crit] = st.number_input("Masukkan ROM (GB)", min_value=0)
+        elif crit == "Camera":
+            user_input[crit] = st.number_input("Masukkan Kamera (MP)", min_value=0)
+        elif crit == "Battery":
+            user_input[crit] = st.number_input("Masukkan Kapasitas Baterai (mAh)", min_value=0)
 
     # Jumlah hasil rekomendasi
     st.subheader("📊 Jumlah Rekomendasi")
