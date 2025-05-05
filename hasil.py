@@ -19,12 +19,12 @@ st.dataframe(df)
 st.subheader("🔍 Spesifikasi Smartphone")
 
 # Checkbox untuk memilih kriteria
-use_price = st.checkbox("Gunakan Harga (Price)")
-use_ratings = st.checkbox("Gunakan Rating")
-use_ram = st.checkbox("Gunakan RAM")
-use_rom = st.checkbox("Gunakan ROM")
-use_camera = st.checkbox("Gunakan Kamera")
-use_battery = st.checkbox("Gunakan Baterai")
+use_price = st.checkbox("Harga")
+use_ratings = st.checkbox("Rating")
+use_ram = st.checkbox("RAM")
+use_rom = st.checkbox("ROM")
+use_camera = st.checkbox("Kamera")
+use_battery = st.checkbox("Baterai")
 
 # Mapping nama kriteria dan checkbox
 criteria_map = {
@@ -43,7 +43,7 @@ if not selected_criteria:
     st.warning("❗ Silakan pilih minimal satu spesifikasi!")
 else:
     # Input preferensi pengguna
-    st.subheader("🎯 Masukkan Preferensi Anda")
+    st.subheader("📊 Masukkan Preferensi Anda")
     user_input = {}
 
     for crit in selected_criteria:
@@ -59,7 +59,7 @@ else:
     st.subheader("📊 Jumlah Rekomendasi")
     top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
-    if st.button("💡 Tampilkan Rekomendasi (Cosine Similarity)"):
+    if st.button("💡 Tampilkan Rekomendasi"):
         df_selected = df[selected_criteria].copy()
 
         # Ubah ke tipe numerik dan isi nilai kosong
@@ -94,7 +94,7 @@ else:
         result = df.iloc[top_indices].copy()
         result["Similarity Score"] = top_similarities
 
-        st.subheader("📋 Hasil Rekomendasi Smartphone (Berdasarkan Similarity):")
+        st.subheader("📋 Rekomendasi Smartphone:")
         display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
        # Reset index dan tambahkan kolom No
         result.reset_index(drop=True, inplace=True)
