@@ -1,100 +1,106 @@
 import streamlit as st
 import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Load dataset
-data = pd.read_excel('data_smartphones.xlsx')
+df = pd.read_excel("data_smartphones.xlsx")
 
-# Fitur yang digunakan untuk similarity
-fitur = ['Price', 'Ratings', 'RAM (GB)', 'Battery', 'ROM (GB)']
+# Preprocessing kolom Camera
+if "Camera" in df.columns:
+    df["Camera"] = df["Camera"].astype(str).str.replace("MP", "", regex=False).astype(float)
 
-# Normalisasi fitur
-scaler = MinMaxScaler()
-data_scaled = scaler.fit_transform(data[fitur])
-similarity_matrix = cosine_similarity(data_scaled)
+# Judul aplikasi
+st.title("📱 Sistem Rekomendasi Smartphone")
+st.subheader("📑 Dataset Smartphone")
+st.dataframe(df)
 
-# Tampilkan judul dan data
-st.subheader("📱 Sistem Rekomendasi Smartphone Berdasarkan Preferensi")
-st.write("Berikut ini adalah data smartphone yang tersedia:")
-st.dataframe(data)
+# Pilihan kriteria
+st.subheader("🔍 Spesifikasi Smartphone")
 
-# Filter
-st.subheader("🔍 Pilih Kriteria Smartphone yang Anda Inginkan")
+# Checkbox untuk memilih kriteria
+use_price = st.checkbox("Harga")
+use_ratings = st.checkbox("Rating")
+use_ram = st.checkbox("RAM")
+use_rom = st.checkbox("ROM")
+use_camera = st.checkbox("Kamera")
+use_battery = st.checkbox("Baterai")
 
-filter_price = st.checkbox("Filter Harga")
-filter_rating = st.checkbox("Filter Rating")
-filter_ram = st.checkbox("Filter RAM")
-filter_rom = st.checkbox("Filter ROM")
-filter_camera = st.checkbox("Filter Kamera")
-filter_battery = st.checkbox("Filter Baterai")
+# Mapping nama kriteria dan checkbox
+criteria_map = {
+    "Price": use_price,
+    "Ratings": use_ratings,
+    "RAM (GB)": use_ram,
+    "ROM (GB)": use_rom,
+    "Camera": use_camera,
+    "Battery": use_battery
+}
 
-# Input user
-if any([filter_price, filter_rating, filter_ram, filter_rom, filter_camera, filter_battery]):
-    data_filtered = data.copy()
-    
-    if filter_price:
-        max_price = st.number_input("Masukkan Harga Maksimal (Rp)", min_value=0, value=6000000, step=500000)
-        data_filtered = data_filtered[data_filtered['Price'] <= max_price]
+# Kriteria yang dipilih
+selected_criteria = [key for key, value in criteria_map.items() if value]
 
-    if filter_rating:
-        min_rating = st.slider("Pilih Rating Minimal", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
-        data_filtered = data_filtered[data_filtered['Ratings'] >= min_rating]
-
-    if filter_ram:
-        min_ram = st.selectbox("Pilih RAM Minimal (GB)", sorted(data['RAM (GB)'].unique()))
-        data_filtered = data_filtered[data_filtered['RAM (GB)'] >= min_ram]
-
-    if filter_rom:
-        min_rom = st.selectbox("Pilih ROM Minimal (GB)", sorted(data['ROM (GB)'].unique()))
-        data_filtered = data_filtered[data_filtered['ROM (GB)'] >= min_rom]
-
-    if filter_camera:
-        unique_cameras = sorted(data['Camera'].unique())
-        selected_camera = st.selectbox("Pilih Kamera", unique_cameras)
-        data_filtered = data_filtered[data_filtered['Camera'] == selected_camera]
-
-    if filter_battery:
-        min_battery = st.selectbox("Pilih Kapasitas Baterai Minimal (mAh)", sorted(data['Battery'].unique()))
-        data_filtered = data_filtered[data_filtered['Battery'] >= min_battery]
-
-    # Menampilkan hasil rekomendasi
-    st.subheader("📊 5 Rekomendasi Smartphone Terbaik untuk Anda:")
-
-    # Input jumlah rekomendasi yang ingin ditampilkan
-    jumlah_rekomendasi = st.number_input(
-        "Masukkan jumlah rekomendasi yang diinginkan", 
-        min_value=1, 
-        max_value=min(10, len(data_filtered)), 
-        value=5, 
-        step=1
-    )
-
-    if not data_filtered.empty:
-        # Ambil indeks dari smartphone referensi pertama
-        idx_referensi = data.index[data['Type'] == data_filtered.iloc[0]['Type']].tolist()[0]
-        
-        # Hitung similarity antara referensi dengan seluruh data
-        similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
-        similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
-
-        # Buang diri sendiri dari rekomendasi
-        similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
-        top_indices = [s[0] for s in similarity_scores[:jumlah_rekomendasi]]
-        top_similarities = [s[1] for s in similarity_scores[:jumlah_rekomendasi]]
-
-        rekomendasi = data.iloc[top_indices].copy()
-        rekomendasi['Similarity'] = top_similarities
-        rekomendasi['No'] = range(1, len(rekomendasi) + 1)
-
-        st.dataframe(
-            rekomendasi[['No', 'Brand', 'Type', 'Price', 'Ratings', 'RAM (GB)', 'ROM (GB)', 'Camera', 'Battery', 'Similarity']],
-            use_container_width=True,
-            hide_index=True
-        )
-
-    else:
-        st.warning("❌ Tidak ada smartphone yang sesuai dengan kriteria filter Anda.")
+if not selected_criteria:
+    st.warning("❗ Silakan pilih minimal satu spesifikasi!")
 else:
-    st.info("☝ Silakan aktifkan setidaknya satu filter terlebih dahulu untuk melihat hasil rekomendasi.")
+    # Input preferensi pengguna
+    st.subheader("📊 Masukkan Preferensi Anda")
+    user_input = {}
+
+    for crit in selected_criteria:
+        if crit == "Price":
+            user_input[crit] = st.number_input("Masukkan Harga Maksimum (Rp)", min_value=0)
+        elif crit == "Ratings":
+            user_input[crit] = st.slider("Pilih Rating Minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
+        elif crit in ["RAM (GB)", "ROM (GB)", "Camera", "Battery"]:
+            options = sorted(df[crit].dropna().unique())
+            user_input[crit] = st.selectbox(f"Pilih {crit}", options)
+
+    # Jumlah hasil rekomendasi
+    st.subheader("📊 Jumlah Rekomendasi")
+    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
+
+    if st.button("💡 Tampilkan Rekomendasi"):
+        df_selected = df[selected_criteria].copy()
+
+        # Ubah ke tipe numerik dan isi nilai kosong
+        for col in selected_criteria:
+            df_selected[col] = pd.to_numeric(df_selected[col], errors='coerce')
+            df_selected[col].fillna(df_selected[col].median(), inplace=True)
+
+        # Tambahkan input pengguna sebagai baris terakhir (referensi)
+        user_df = pd.DataFrame([user_input])
+        combined_df = pd.concat([df_selected, user_df], ignore_index=True)
+
+        # Normalisasi seluruh data (termasuk input user)
+        scaler = MinMaxScaler()
+        scaled_data = scaler.fit_transform(combined_df)
+
+        # Hitung cosine similarity
+        similarity_matrix = cosine_similarity(scaled_data)
+
+        # Index referensi adalah baris terakhir
+        idx_referensi = len(scaled_data) - 1
+        similarity_scores = list(enumerate(similarity_matrix[idx_referensi]))
+
+        # Urutkan dan buang diri sendiri
+        similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+        similarity_scores = [s for s in similarity_scores if s[0] != idx_referensi]
+
+        # Ambil top-N rekomendasi
+        top_indices = [s[0] for s in similarity_scores[:top_n]]
+        top_similarities = [s[1] for s in similarity_scores[:top_n]]
+
+        # Tampilkan hasil
+        result = df.iloc[top_indices].copy()
+        result["Similarity Score"] = top_similarities
+
+        st.subheader("📋 Rekomendasi Smartphone:")
+        display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+       # Reset index dan tambahkan kolom No
+        result.reset_index(drop=True, inplace=True)
+        result.index = result.index + 1
+        result.insert(0, "No", result.index)
+        
+        # Tampilkan hasil
+        display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+        st.dataframe(result[display_cols].to_dict(orient="records"), use_container_width=True)
