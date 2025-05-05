@@ -75,5 +75,5 @@ else:
             st.warning("⚠️ Tidak ditemukan smartphone yang sesuai dengan preferensi Anda.")
         else:
             st.subheader("📋 Hasil Rekomendasi Smartphone:")
-            display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
+            display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
             st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
