@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from numpy.linalg import norm
 
 # Load dataset
 df = pd.read_excel("data_smartphones.xlsx")
@@ -58,22 +60,29 @@ else:
     top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
     # Tombol rekomendasi
-    if st.button("💡 Tampilkan Rekomendasi"):
-        filtered_df = df.copy()
+    if st.button("💡 Tampilkan Rekomendasi dengan Similarity"):
+        df_selected = df[selected_criteria].copy()
 
-        for crit in selected_criteria:
-            if crit == "Price":
-                filtered_df = filtered_df[filtered_df[crit] <= user_input[crit]]
-            elif crit == "Ratings":
-                filtered_df = filtered_df[filtered_df[crit] >= user_input[crit]]
-            else:
-                filtered_df = filtered_df[filtered_df[crit] == user_input[crit]]
+        # Ubah ke tipe numerik dan tangani missing values
+        for col in selected_criteria:
+            df_selected[col] = pd.to_numeric(df_selected[col], errors='coerce')
+            df_selected[col].fillna(df_selected[col].median(), inplace=True)
 
-        result = filtered_df.head(top_n)
+        # Normalisasi data
+        scaler = MinMaxScaler()
+        df_scaled = scaler.fit_transform(df_selected)
 
-        if result.empty:
-            st.warning("⚠️ Tidak ditemukan smartphone yang sesuai dengan preferensi Anda.")
-        else:
-            st.subheader("📋 Hasil Rekomendasi Smartphone:")
-            display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
-            st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
+        # Normalisasi input pengguna
+        user_input_df = pd.DataFrame([user_input])
+        user_scaled = scaler.transform(user_input_df)[0]
+
+        # Hitung euclidean distance (semakin kecil semakin mirip)
+        distances = [norm(row - user_scaled) for row in df_scaled]
+        df["Similarity Score"] = distances
+
+        # Ambil top N hasil terdekat
+        result = df.sort_values(by="Similarity Score").head(top_n)
+
+        st.subheader("📋 Hasil Rekomendasi Smartphone (Berdasarkan Kemiripan):")
+        display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+        st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
