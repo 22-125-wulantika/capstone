@@ -90,13 +90,15 @@ else:
         result = df.iloc[top_indices].copy()
         result["Similarity Score"] = top_similarities
 
-        st.subheader("📋 Rekomendasi Smartphone:")
-        display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
-       # Reset index dan tambahkan kolom No
+        # Tambahkan kolom No
         result.reset_index(drop=True, inplace=True)
         result.index = result.index + 1
         result.insert(0, "No", result.index)
-        
+
+        # Tentukan kolom untuk ditampilkan secara dinamis
+        all_possible_cols = ["No", "Brand", "Type", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+        display_cols = [col for col in all_possible_cols if col in result.columns]
+
         # Tampilkan hasil
-        display_cols = ["No", "Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Similarity Score"]
+        st.subheader("📋 Rekomendasi Smartphone:")
         st.dataframe(result[display_cols].to_dict(orient="records"), use_container_width=True)
