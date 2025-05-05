@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-from numpy.linalg import norm
 
 # Load dataset
 df = pd.read_excel("data_smartphones.xlsx")
@@ -60,32 +58,22 @@ else:
     top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
     # Tombol rekomendasi
-    if st.button("💡 Rekomendasikan"):
-        # Filter dan normalisasi data
-        df_selected = df[selected_criteria].copy()
+    if st.button("💡 Tampilkan Rekomendasi"):
+        filtered_df = df.copy()
 
-        for col in selected_criteria:
-            df_selected[col] = pd.to_numeric(df_selected[col], errors='coerce')
-            df_selected[col].fillna(df_selected[col].median(), inplace=True)
+        for crit in selected_criteria:
+            if crit == "Price":
+                filtered_df = filtered_df[filtered_df[crit] <= user_input[crit]]
+            elif crit == "Ratings":
+                filtered_df = filtered_df[filtered_df[crit] >= user_input[crit]]
+            else:
+                filtered_df = filtered_df[filtered_df[crit] == user_input[crit]]
 
-        scaler = MinMaxScaler()
-        df_scaled = scaler.fit_transform(df_selected)
+        result = filtered_df.head(top_n)
 
-        user_input_df = pd.DataFrame([user_input])
-        user_scaled = scaler.transform(user_input_df)[0]
-
-        distances = [norm(row - user_scaled) for row in df_scaled]
-        df["Similarity Score"] = distances
-
-        # Ambil top N hasil rekomendasi
-        result = df.sort_values(by="Similarity Score").head(top_n)
-
-        st.subheader("📋 Hasil Rekomendasi Smartphone:")
-        # Ganti nama kolom skor
-        result = result.rename(columns={"Similarity Score": "Skor Kemiripan"})
-        
-        # Kolom yang ditampilkan
-        display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery", "Skor Kemiripan"]
-        
-        # Tampilkan hasil tanpa index
-        st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
+        if result.empty:
+            st.warning("⚠️ Tidak ditemukan smartphone yang sesuai dengan preferensi Anda.")
+        else:
+            st.subheader("📋 Hasil Rekomendasi Smartphone:")
+            display_cols = ["Brand", "Type", "Colour", "Price", "Ratings", "RAM (GB)", "ROM (GB)", "Camera", "Battery"]
+            st.dataframe(result[display_cols].reset_index(drop=True), use_container_width=True)
