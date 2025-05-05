@@ -48,8 +48,9 @@ else:
         elif crit == "Ratings":
             user_input[crit] = st.slider("Pilih Rating Minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
         elif crit in ["RAM (GB)", "ROM (GB)", "Camera", "Battery"]:
-            options = sorted(df[crit].dropna().unique())
-            user_input[crit] = st.selectbox(f"Pilih {crit}", options)
+            min_val = int(df[crit].min())
+            max_val = int(df[crit].max())
+            user_input[crit] = st.number_input(f"Masukkan nilai {crit}", min_value=min_val, max_value=max_val, value=min_val)
 
     # Jumlah hasil rekomendasi
     st.subheader("📊 Jumlah Rekomendasi")
