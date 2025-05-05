@@ -47,18 +47,13 @@ else:
             user_input[crit] = st.number_input("Masukkan Harga Maksimum (Rp)", min_value=0)
         elif crit == "Ratings":
             user_input[crit] = st.slider("Pilih Rating Minimum", min_value=0.0, max_value=5.0, value=4.0, step=0.1)
-        elif crit == "RAM (GB)":
-            user_input[crit] = st.number_input("Masukkan RAM (GB)", min_value=0)
-        elif crit == "ROM (GB)":
-            user_input[crit] = st.number_input("Masukkan ROM (GB)", min_value=0)
-        elif crit == "Camera":
-            user_input[crit] = st.number_input("Masukkan Kamera (MP)", min_value=0)
-        elif crit == "Battery":
-            user_input[crit] = st.number_input("Masukkan Kapasitas Baterai (mAh)", min_value=0)
+        elif crit in ["RAM (GB)", "ROM (GB)", "Camera", "Battery"]:
+            options = sorted(df[crit].dropna().unique())
+            user_input[crit] = st.selectbox(f"Pilih {crit}", options)
 
     # Jumlah hasil rekomendasi
     st.subheader("📊 Jumlah Rekomendasi")
-    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=800, value=5)
+    top_n = st.number_input("Masukkan jumlah hasil rekomendasi:", min_value=1, max_value=20, value=5)
 
     if st.button("💡 Tampilkan Rekomendasi"):
         df_selected = df[selected_criteria].copy()
